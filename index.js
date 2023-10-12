@@ -3,7 +3,10 @@ const bodyParser = require('body-parser');
 const mongoose = require('./db'); // Import your MongoDB connection
 const User = require('./model'); // Import the Mongoose model
 
+const cors = require('cors');
+
 const app = express();
+app.use(cors());
 const port = process.env.PORT || 6000;
 
 app.use(bodyParser.json());

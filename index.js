@@ -1,90 +1,43 @@
-const express = require('express');
-const bodyParser = require('body-parser');
-const mongoose = require('./db'); // Import your MongoDB connection
-const User = require('./model'); // Import the Mongoose model
 
+
+
+// IMPORTS FROM PACKAGES
+const express = require("express");
+const mongoose = require("mongoose");
+const adminRouter = require("./routes/admin");
+// IMPORTS FROM OTHER FILES
+const authRouter = require("./routes/auth");
+const productRouter = require("./routes/product");
+const userRouter = require("./routes/user");
 const cors = require('cors');
 
+// INIT
+const PORT = process.env.PORT || 3000;
 const app = express();
+
+
+
 app.use(cors());
-const port = process.env.PORT || 6000;
+const DB =
+  "mongodb+srv://sabik:sabik@cluster0.y5doltf.mongodb.net/?retryWrites=true&w=majority";
 
-app.use(bodyParser.json());
+// middleware
+app.use(express.json());
+app.use(authRouter);
+app.use(adminRouter);
+app.use(productRouter);
+app.use(userRouter);
 
-// Create a new user
-app.post('/users', (req, res) => {
-  const newUser = new User(req.body);
+// Connections
+mongoose
+  .connect(DB)
+  .then(() => {
+    console.log("Connection Successful");
+  })
+  .catch((e) => {
+    console.log(e);
+  });
 
-  newUser.save()
-    .then((user) => {
-      res.status(201).json(user);
-    })
-    .catch((error) => {
-      res.status(400).json({ error: error.message });
-    });
-});
-
-// Get all users
-app.get('/users', (req, res) => {
-  User.find()
-    .then((users) => {
-      res.status(200).json(users);
-    })
-    .catch((error) => {
-      res.status(500).json({ error: error.message });
-    });
-});
-
-// Get a specific user by ID
-app.get('/users/:id', (req, res) => {
-  const userId = req.params.id;
-
-  User.findById(userId)
-    .then((user) => {
-      if (!user) {
-        return res.status(404).json({ error: 'User not found' });
-      }
-      res.status(200).json(user);
-    })
-    .catch((error) => {
-      res.status(500).json({ error: error.message });
-    });
-});
-
-// Update a user by ID
-app.put('/users/:id', (req, res) => {
-  const userId = req.params.id;
-  const updatedUserData = req.body;
-
-  User.findByIdAndUpdate(userId, updatedUserData, { new: true })
-    .then((user) => {
-      if (!user) {
-        return res.status(404).json({ error: 'User not found' });
-      }
-      res.status(200).json(user);
-    })
-    .catch((error) => {
-      res.status(500).json({ error: error.message });
-    });
-});
-
-// Delete a user by ID
-app.delete('/users/:id', (req, res) => {
-  const userId = req.params.id;
-
-  User.findByIdAndRemove(userId)
-    .then((user) => {
-      if (!user) {
-        return res.status(404).json({ error: 'User not found' });
-      }
-      res.status(204).send(); // 204 No Content response for successful deletion
-    })
-    .catch((error) => {
-      res.status(500).json({ error: error.message });
-    });
-});
-
-// Start the Express server
-app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`connected at port ${PORT}`);
 });

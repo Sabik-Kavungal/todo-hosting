@@ -4,7 +4,27 @@ const auth = require("../middlewares/auth");
 const Order = require("../models/order");
 const { Product } = require("../models/product");
 const User = require("../models/user");
+userRouter.get('/api/profile', auth, async (req, res) => {
+  try {
+    const userId = req.user;
 
+    // Find the user by their user ID
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ msg: 'User not found' });
+    }
+
+    // Return the user's profile information
+    res.json({
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 userRouter.post("/api/add-to-cart", auth, async (req, res) => {
   try {
     const { id } = req.body;

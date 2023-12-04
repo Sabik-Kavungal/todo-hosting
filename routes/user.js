@@ -4,6 +4,77 @@ const auth = require("../middlewares/auth");
 const Order = require("../models/order");
 const { Product } = require("../models/product");
 const User = require("../models/user");
+const bcrypt = require("bcryptjs");
+
+userRouter.put('/api/change-password', auth, async (req, res) => {
+  try {
+    const userId = req.user;
+    const { currentPassword, newPassword } = req.body; // Assuming the request contains current and new passwords
+
+    // Validate request parameters
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ msg: 'Please provide current and new passwords' });
+    }
+
+    // Retrieve the user from the database
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ msg: 'User not found' });
+    }
+
+    // Verify the current password
+    const isPasswordMatch = await bcrypt.compare(currentPassword, user.password);
+
+    if (!isPasswordMatch) {
+      return res.status(401).json({ msg: 'Current password is incorrect' });
+    }
+
+    // Hash the new password
+    const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+
+    // Update the user's password
+    user.password = hashedNewPassword;
+    await user.save();
+
+    res.json({ msg: 'Password updated successfully' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+
+userRouter.put('/api/profile', auth, async (req, res) => {
+  try {
+    const userId = req.user;
+    const { name, email } = req.body; // Assuming the request contains updated name and email fields
+
+    // Validate request parameters
+    if (!name || !email) {
+      return res.status(400).json({ msg: 'Please provide name and email for update' });
+    }
+
+    // Update user profile
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { $set: { name, email } },
+      { new: true } // Return the updated document
+    );
+
+    if (!updatedUser) {
+      return res.status(404).json({ msg: 'User not found' });
+    }
+
+    res.json({
+      _id: updatedUser._id,
+      name: updatedUser.name,
+      email: updatedUser.email,
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 
 
 userRouter.get('/api/profile', auth, async (req, res) => {

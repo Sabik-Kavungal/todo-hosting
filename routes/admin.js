@@ -43,7 +43,6 @@ adminRouter.post("/admin/add-product", upload.array('images', 5), async (req, re
   try {
     const { name, description, quantity, price, category } = req.body;
 
-    // Check if all required fields are provided
     if (!name || !description || !quantity || !price || !category) {
       return res.status(400).json({ error: 'Missing required fields' });
     }

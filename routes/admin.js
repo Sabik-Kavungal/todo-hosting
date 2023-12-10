@@ -29,7 +29,7 @@ const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, 'uploads/'); // Specify the directory where uploaded files will be stored
   },
-  
+
   filename: function (req, file, cb) {
     const ext = file.originalname.split('.').pop();
     cb(null, Date.now() + '.' + ext); // Rename files with a timestamp
@@ -44,7 +44,7 @@ adminRouter.post("/admin/add-product", upload.array('images', 5), async (req, re
     const { name, description, quantity, price, category } = req.body;
 
     // Check if all required fields are provided
-    if (!name || !description || !quantity || !price || !category || !req.files) {
+    if (!name || !description || !quantity || !price || !category) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
 

@@ -29,6 +29,7 @@ const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, 'uploads/'); // Specify the directory where uploaded files will be stored
   },
+  
   filename: function (req, file, cb) {
     const ext = file.originalname.split('.').pop();
     cb(null, Date.now() + '.' + ext); // Rename files with a timestamp

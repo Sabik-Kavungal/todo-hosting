@@ -36,7 +36,25 @@ const storage = multer.diskStorage({
   },
 });
 
-const upload = multer({ storage: storage });
+const fileFilter = (req, file, cb) => {
+  // Add validation for file types if needed
+  const allowedFileTypes = ['image/jpeg', 'image/png'];
+  if (allowedFileTypes.includes(file.mimetype)) {
+    cb(null, true);
+  } else {
+    cb(new Error('Invalid file type. Only JPEG and PNG are allowed.'));
+  }
+};
+
+const limits = {
+  fileSize: 1024 * 1024 * 5, // 5 MB limit for each file
+};
+
+const upload = multer({
+  storage: storage,
+  fileFilter: fileFilter,
+  limits: limits,
+});
 
 // Route for adding a product with file uploads
 adminRouter.post("/admin/add-product", upload.array('images', 5), async (req, res) => {
@@ -47,7 +65,8 @@ adminRouter.post("/admin/add-product", upload.array('images', 5), async (req, re
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
-    const images = req.files.map(file => file.filename);
+    // Check if req.files is defined and not empty
+    const images = req.files ? req.files.map(file => file.filename) : [];
 
     // Create a new product instance
     const product = new Product({
@@ -64,11 +83,10 @@ adminRouter.post("/admin/add-product", upload.array('images', 5), async (req, re
 
     res.json(product);
   } catch (e) {
-    console.error('Error adding product:', e);
+    console.error('Error adding product:', e.message);
     res.status(500).json({ error: 'An error occurred while adding the product' });
   }
 });
-
 
 // Get all your products
 adminRouter.get("/admin/get-products", admin, async (req, res) => {

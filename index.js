@@ -9,6 +9,7 @@ const adminRouter = require("./routes/admin");
 const authRouter = require("./routes/auth");
 const productRouter = require("./routes/product");
 const userRouter = require("./routes/user");
+const itemRoutes = require("./routes/learn/route");
 const cors = require('cors');
 
 // INIT
@@ -23,6 +24,7 @@ const DB =
 
 // middleware
 app.use(express.json());
+app.use(itemRoutes);
 app.use(authRouter);
 app.use(adminRouter);
 app.use(productRouter);

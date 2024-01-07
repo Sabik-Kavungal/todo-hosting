@@ -28,10 +28,12 @@ const userSchema = mongoose.Schema({
     type: String,
     default: "",
   },
-  type: {
+  userType: {
     type: String,
-    default: "user",
+    enum: ['user', 'admin'], 
+    default: 'user',
   },
+
   cart: [
     {
       product: productSchema,

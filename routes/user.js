@@ -145,6 +145,53 @@ userRouter.get("/api/get-cart", auth, async (req, res) => {
 });
 
 
+// Increment quantity in the cart
+userRouter.post("/api/increment-cart/:productId", auth, async (req, res) => {
+  try {
+    const { productId } = req.params;
+    let user = await User.findById(req.user);
+
+    const cartItem = user.cart.find((item) => item.product._id.equals(productId));
+    if (cartItem) {
+      cartItem.quantity += 1;
+      user = await user.save();
+      res.json(user.cart);
+    } else {
+      res.status(404).json({ error: "Product not found in the cart" });
+    }
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// Decrement quantity in the cart
+userRouter.post("/api/decrement-cart/:productId", auth, async (req, res) => {
+  try {
+    const { productId } = req.params;
+    let user = await User.findById(req.user);
+
+    const cartItem = user.cart.find((item) => item.product._id.equals(productId));
+    if (cartItem) {
+      if (cartItem.quantity > 1) {
+        cartItem.quantity -= 1;
+        user = await user.save();
+        res.json(user.cart);
+      } else {
+        // Remove the item from the cart if the quantity becomes 0
+        user.cart = user.cart.filter((item) => !item.product._id.equals(productId));
+        user = await user.save();
+        res.json(user.cart);
+      }
+    } else {
+      res.status(404).json({ error: "Product not found in the cart" });
+    }
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+
+
 userRouter.delete("/api/remove-from-cart/:id", auth, async (req, res) => {
   try {
     const { id } = req.params;

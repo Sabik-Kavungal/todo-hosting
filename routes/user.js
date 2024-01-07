@@ -127,6 +127,24 @@ userRouter.post("/api/add-to-cart", auth, async (req, res) => {
   }
 });
 
+// Assuming you have a route like this in your application
+userRouter.get("/api/get-cart", auth, async (req, res) => {
+  try {
+    // Fetch the user based on the authenticated user ID
+    const user = await User.findById(req.user);
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    // Return the user's cart
+    res.json(user.cart);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+
 userRouter.delete("/api/remove-from-cart/:id", auth, async (req, res) => {
   try {
     const { id } = req.params;

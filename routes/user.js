@@ -213,6 +213,26 @@ userRouter.delete("/api/remove-from-cart/:id", auth, async (req, res) => {
     res.status(500).json({ error: e.message });
   }
 });
+userRouter.delete("/api/delete-cart-item/:productId", auth, async (req, res) => {
+  try {
+    const { productId } = req.params;
+    let user = await User.findById(req.user);
+
+    // Find the index of the item in the cart based on the product ID
+    const itemIndex = user.cart.findIndex((item) => item.product._id.equals(productId));
+
+    if (itemIndex !== -1) {
+      // Remove the item from the cart array
+      user.cart.splice(itemIndex, 1);
+      user = await user.save();
+      res.json(user.cart);
+    } else {
+      res.status(404).json({ error: "Product not found in the cart" });
+    }
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
 
 // save user address
 userRouter.post("/api/save-user-address", auth, async (req, res) => {

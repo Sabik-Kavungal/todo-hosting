@@ -255,7 +255,7 @@ userRouter.post('/api/orders', async (req, res) => {
       return res.status(400).json({ error: 'Product list is required in the request body.' });
     }
 
-    // Validate if userId and address are present in the request body
+    // Validate if userId and address are present in the request bodyfff
     if (!userId || !address) {
       return res.status(400).json({ error: 'UserId and address are required in the request body.' });
     }

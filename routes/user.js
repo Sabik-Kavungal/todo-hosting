@@ -247,10 +247,54 @@ userRouter.post("/api/save-user-address", auth, async (req, res) => {
   }
 });
 
-// order product
+// // order product
+// userRouter.post("/api/order", auth, async (req, res) => {
+//   try {
+//     const { cart, totalPrice, address } = req.body;
+//     let products = [];
+
+//     for (let i = 0; i < cart.length; i++) {
+//       let product = await Product.findById(cart[i].product._id);
+//       if (product.quantity >= cart[i].quantity) {
+//         product.quantity -= cart[i].quantity;
+//         products.push({ product, quantity: cart[i].quantity });
+//         await product.save();
+//       } else {
+//         return res
+//           .status(400)
+//           .json({ msg: `${product.name} is out of stock!` });
+//       }
+//     }
+
+//     let user = await User.findById(req.user);
+//     user.cart = [];
+//     user = await user.save();
+
+//     let order = new Order({
+//       products,
+//       totalPrice,
+//       address,
+//       userId: req.user,
+//       orderedAt: new Date().getTime(),
+//     });
+//     order = await order.save();
+//     res.json(order);
+//   } catch (e) {
+//     res.status(500).json({ error: e.message });
+//   }
+// });
+
+
+// Route to place an order
 userRouter.post("/api/order", auth, async (req, res) => {
   try {
     const { cart, totalPrice, address } = req.body;
+
+    // Check if required fields are present in the request
+    if (!cart || !totalPrice || !address) {
+      return res.status(400).json({ msg: 'Invalid request payload' });
+    }
+
     let products = [];
 
     for (let i = 0; i < cart.length; i++) {
@@ -278,11 +322,14 @@ userRouter.post("/api/order", auth, async (req, res) => {
       orderedAt: new Date().getTime(),
     });
     order = await order.save();
+    
     res.json(order);
   } catch (e) {
+    console.error("Error placing order:", e);
     res.status(500).json({ error: e.message });
   }
 });
+
 
 userRouter.get("/api/orders/me", auth, async (req, res) => {
   try {

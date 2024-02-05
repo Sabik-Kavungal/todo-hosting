@@ -246,6 +246,47 @@ userRouter.post("/api/save-user-address", auth, async (req, res) => {
     res.status(500).json({ error: e.message });
   }
 });
+userRouter.post('/api/order', async (req, res) => {
+  try {
+    const { productList, address, userId } = req.body;
+
+    // Validate if productList is present in the request body
+    if (!productList || productList.length === 0) {
+      return res.status(400).json({ error: 'Product list is required in the request body.' });
+    }
+
+    // Validate if userId and address are present in the request body
+    if (!userId || !address) {
+      return res.status(400).json({ error: 'UserId and address are required in the request body.' });
+    }
+
+    // Calculate total price based on the product list
+    const totalPrice = productList.reduce((total, product) => {
+      const productPrice = product.product.price;
+      const productQuantity = product.quantity;
+      return total + productPrice * productQuantity;
+    }, 0);
+
+    // Create an order
+    const order = new Order({
+      products: productList,
+      totalPrice,
+      address,
+      userId,
+      orderedAt: Date.now(),
+      status: 0, // Default status
+    });
+
+    // Save the order to the database
+    await order.save();
+
+    res.status(201).json({ message: 'Order created successfully.', order });
+  } catch (error) {
+    console.error('Error creating order:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
 
 // // order product
 // userRouter.post("/api/order", auth, async (req, res) => {
@@ -283,53 +324,6 @@ userRouter.post("/api/save-user-address", auth, async (req, res) => {
 //     res.status(500).json({ error: e.message });
 //   }
 // });
-
-
-// Route to place an order
-userRouter.post("/api/order", auth, async (req, res) => {
-  try {
-    const { cart, totalPrice, address } = req.body;
-
-    // Check if required fields are present in the request
-    if (!cart || !totalPrice || !address) {
-      return res.status(400).json({ msg: 'Invalid request payload' });
-    }
-
-    let products = [];
-
-    for (let i = 0; i < cart.length; i++) {
-      let product = await Product.findById(cart[i].product._id);
-      if (product.quantity >= cart[i].quantity) {
-        product.quantity -= cart[i].quantity;
-        products.push({ product, quantity: cart[i].quantity });
-        await product.save();
-      } else {
-        return res
-          .status(400)
-          .json({ msg: `${product.name} is out of stock!` });
-      }
-    }
-
-    let user = await User.findById(req.user);
-    user.cart = [];
-    user = await user.save();
-
-    let order = new Order({
-      products,
-      totalPrice,
-      address,
-      userId: req.user,
-      orderedAt: new Date().getTime(),
-    });
-    order = await order.save();
-    
-    res.json(order);
-  } catch (e) {
-    console.error("Error placing order:", e);
-    res.status(500).json({ error: e.message });
-  }
-});
-
 
 userRouter.get("/api/orders/me", auth, async (req, res) => {
   try {

@@ -246,7 +246,7 @@ userRouter.post("/api/save-user-address", auth, async (req, res) => {
     res.status(500).json({ error: e.message });
   }
 });
-userRouter.post('/api/order', async (req, res) => {
+userRouter.post('/api/orders', async (req, res) => {
   try {
     const { productList, address, userId } = req.body;
 
@@ -280,12 +280,18 @@ userRouter.post('/api/order', async (req, res) => {
     // Save the order to the database
     await order.save();
 
-    res.status(201).json({ message: 'Order created successfully.', order });
+    // Empty the user's cart after placing an order
+    const user = await User.findById(userId);
+    user.cart = [];
+    await user.save();
+
+    res.status(201).json({ message: 'Order created successfully.', order, user });
   } catch (error) {
     console.error('Error creating order:', error);
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
+
 
 
 // // order product
